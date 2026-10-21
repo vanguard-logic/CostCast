@@ -174,7 +174,6 @@ html.dk .big{color:#FFFFFF}
       <button class="btn b-blue" data-lv="Admin">Admin</button>
       <button class="btn b-line" data-lv="Developer">Developer</button>
     </div>
-    <div style="text-align:center;margin-top:10px"><button class="link" id="siNew">New user</button></div>
   </div>
 </div>
 
@@ -454,25 +453,6 @@ function signIn() {
   me = u; try { sessionStorage.setItem(SKEY, u.id); } catch (e) {}
   openApp();
 }
-$('siNew').onclick = () => {
-  const id = modal('New user', `
-    <label class="f">Username</label><input class="in" id="nuName" autocapitalize="none">
-    <label class="f">Password</label><div class="pw"><input class="in" id="nuPass" type="password"><button class="eye" type="button" data-eye="nuPass"></button></div>
-    <label class="f">Confirm password</label><div class="pw"><input class="in" id="nuPass2" type="password"><button class="eye" type="button" data-eye="nuPass2"></button></div>
-    <label class="f">Registration code</label><input class="in" id="nuCode" autocapitalize="characters">
-    <p class="muted" style="margin-top:8px">Get the registration code from your admin.</p>`,
-    `<button class="btn b-line" data-close>Cancel</button><button class="btn b-blue" id="nuSave">Save</button>`);
-  $('nuSave').onclick = () => {
-    const n = $('nuName').value.trim(), p = $('nuPass').value;
-    if (n.length < 3) return toast('Username needs 3 or more letters');
-    if (p.length < 4) return toast('Password needs 4 or more characters');
-    if (p !== $('nuPass2').value) return toast('Passwords do not match');
-    if ($('nuCode').value.trim().toUpperCase() !== String(S.regCode).toUpperCase()) return toast('Wrong registration code');
-    if (S.users.some(u => u.name.toLowerCase() === n.toLowerCase())) return toast('Username already used');
-    S.users.push({ id: uid('u'), name: n, pass: hash(p), role: 'User' }); save(); close(id);
-    message('New user', `User <b>${esc(n)}</b> is ready. Tap User to sign in.`);
-  };
-};
 $('signOut').onclick = () => confirmBox('Sign out', 'Do you want to sign out?', 'Sign out', () => { me = null; try { sessionStorage.removeItem(SKEY); } catch (e) {} showSignIn(); });
 
 /* ============================================================
@@ -945,8 +925,6 @@ function pageSettings() {
     ${users.map(u => `<div class="list-item"><div><div class="li-name">${esc(u.name)}</div><span class="tag">${u.role}</span></div>
       <div class="btnrow" style="flex:none"><button class="btn b-line b-sm" data-upw="${u.id}">Password</button>${u.id !== me.id && u.role !== 'Developer' ? `<button class="btn b-del b-sm" data-udel="${u.id}">Delete</button>` : ''}</div></div>`).join('')}
     <button class="btn b-blue" id="uAdd" style="margin-top:10px">+ Add user</button>
-    <label class="f" style="margin-top:14px">Registration code (for New user)</label>
-    <div style="display:flex;gap:8px"><input class="in" id="regCode" value="${esc(S.regCode)}" autocapitalize="characters"><button class="btn b-blue" id="regSave">Save</button></div>
   </div>
   ${can.dev() ? `<div class="card"><h3>Developer</h3>
     <div class="btnrow"><button class="btn b-blue" id="bkDown">Backup &#8595;</button><button class="btn b-blue" id="bkUp">Restore &#8593;</button><button class="btn b-del" id="bkReset">Reset</button></div>
@@ -959,7 +937,6 @@ function pageSettings() {
     if (['factoryPct', 'distPct', 'retailPct'].some(k => nv[k] >= 95)) return toast('Margins must be below 95%');
     Object.assign(S.settings, nv); save(); toast('Settings saved');
   };
-  $('regSave').onclick = () => { const v = $('regCode').value.trim(); if (v.length < 4) return toast('Code needs 4 or more characters'); S.regCode = v; save(); toast('Code saved'); };
   $('uAdd').onclick = () => {
     const roles = can.dev() ? ['User', 'Admin'] : ['User', 'Admin'];
     const id = modal('Add user', `<label class="f">Username</label><input class="in" id="auName" autocapitalize="none">
